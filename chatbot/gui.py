@@ -34,12 +34,20 @@ class ChatbotGUI:
         
         # Initialize chatbot
         self.chatbot = ImprovedChat(pairs, reflections, bot_name)
+        self.chatbot.set_user_id("gui_user")  # Set a specific user ID for the GUI
         
         # Message queue for thread-safe operations
         self.msg_queue = queue.Queue()
         
         # Welcome message
-        self.display_bot_message(f"Hi! I'm {bot_name}. How can I help you today?\n\nTry asking me about the weather in a city!")
+        from .chatbot import get_user_info
+        user_name = get_user_info("gui_user", "name")
+        if user_name:
+            welcome_msg = f"Welcome back, {user_name}! How can I help you today?"
+        else:
+            welcome_msg = f"Hi! I'm {bot_name}. I can remember things about you and check the weather.\nTry telling me your name or asking about the weather!"
+        
+        self.display_bot_message(welcome_msg)
         
         # Start checking the message queue
         self.check_messages()

@@ -2,15 +2,54 @@ import json
 import re
 import os
 import random
-import requests  # Add this import for API requests
+import requests  # For API requests
 from nltk.chat.util import Chat as NLTKChat, reflections
 
 # Path to config file - made relative to the script location
 CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config.json")
+MEMORY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "memory.json")
 DEFAULT_BOT_NAME = "Wicked"
 
 # Weather API configuration
 WEATHER_API_KEY = "11ca5bc346a77d53d4dc1277552ae50f"  # Your API key
+
+# User memory storage
+user_memory = {}
+
+def load_memory():
+    """Load user memory from file"""
+    global user_memory
+    try:
+        if os.path.exists(MEMORY_FILE):
+            with open(MEMORY_FILE, "r") as f:
+                user_memory = json.load(f)
+        else:
+            user_memory = {}
+    except Exception as e:
+        print(f"Error loading memory: {e}")
+        user_memory = {}
+
+def save_memory():
+    """Save user memory to file"""
+    try:
+        with open(MEMORY_FILE, "w") as f:
+            json.dump(user_memory, f, indent=2)
+        return True
+    except Exception as e:
+        print(f"Error saving memory: {e}")
+        return False
+
+def store_user_info(user_id, key, value):
+    """Store user information in memory"""
+    if user_id not in user_memory:
+        user_memory[user_id] = {}
+    user_memory[user_id][key] = value
+    save_memory()
+    return True
+
+def get_user_info(user_id, key):
+    """Retrieve user information from memory"""
+    return user_memory.get(user_id, {}).get(key)
 
 def get_weather(city):
     """
@@ -92,6 +131,9 @@ class ImprovedChat(NLTKChat):
         # Store the bot name
         self.bot_name = bot_name
         
+        # Store the current user ID (default for now)
+        self.current_user_id = "default_user"
+        
         # Format pairs with the current bot name before passing to parent
         formatted_pairs = []
         for pattern, response in pairs:
@@ -113,6 +155,13 @@ class ImprovedChat(NLTKChat):
                 for j, response in enumerate(responses):
                     if isinstance(response, str) and "{bot_name}" in response:
                         self._pairs[i][1][j] = response.format(bot_name=self.bot_name)
+                    # Replace memory placeholders
+                    elif isinstance(response, str) and "{memory:" in response:
+                        # Extract memory key from pattern like {memory:favorite_color}
+                        memory_keys = re.findall(r'\{memory:([^}]+)\}', response)
+                        for key in memory_keys:
+                            value = get_user_info(self.current_user_id, key) or "unknown"
+                            self._pairs[i][1][j] = response.replace(f"{{memory:{key}}}", value)
         
         # Check for custom callback pairs
         for pattern, response in self._pairs:
@@ -136,9 +185,17 @@ class ImprovedChat(NLTKChat):
         # Let parent class handle standard responses
         return super().respond(user_input)
     
+    def set_user_id(self, user_id):
+        """Set the current user ID for memory storage"""
+        self.current_user_id = user_id
+    
     def converse(self, quit="quit"):
         """Interact with the user in a console."""
         print(f"Hi! I'm {self.bot_name}, your chatbot. Type '{quit}' to exit.")
+        
+        user_name = get_user_info(self.current_user_id, "name")
+        if user_name:
+            print(f"Welcome back, {user_name}! It's good to see you again.")
         
         while True:
             try:
@@ -173,6 +230,38 @@ def weather_callback(groups):
         return get_weather(city)
     return None
 
+# Memory callbacks
+def store_name_callback(groups):
+    """Store user's name in memory"""
+    if groups and groups[0]:
+        name = groups[0].strip()
+        store_user_info("default_user", "name", name)
+        return None  # Let the template handle the response
+    return None
+
+def store_favorite_callback(groups):
+    """Store user's favorite thing in memory"""
+    if groups and len(groups) >= 2:
+        category = groups[0].strip()
+        item = groups[1].strip()
+        store_user_info("default_user", f"favorite_{category}", item)
+        return None  # Let the template handle the response
+    return None
+
+def get_favorite_callback(groups):
+    """Retrieve user's favorite thing from memory"""
+    if groups and groups[0]:
+        category = groups[0].strip()
+        favorite = get_user_info("default_user", f"favorite_{category}")
+        if favorite:
+            return f"Your favorite {category} is {favorite}!"
+        else:
+            return f"I don't know your favorite {category} yet. What is it?"
+    return None
+
+# Initialize memory when module is loaded
+load_memory()
+
 # Initialize bot name
 bot_name = load_name()
 
@@ -181,7 +270,9 @@ pairs = [
     # Basic greeting and name exchange
     [
         r"my name is (.*)",
-        ["Hello %1! How can I help you today?", "Nice to meet you, %1! What can I do for you?"]
+        (["Hello %1! I'll remember your name.", 
+          "Nice to meet you, %1! I'll remember that."],
+         store_name_callback)
     ],
     [
         r"(?:what(?:'s| is) your name|who are you)\??",
@@ -195,6 +286,29 @@ pairs = [
         r"how are you\??",
         ["I'm doing well, thanks for asking!", "All systems operational! How about you?", 
          "I'm great! How can I help you today?"]
+    ],
+    
+    # Memory-based responses
+    [
+        r"what(?:'s| is) my name\??",
+        ["Your name is {memory:name}.", 
+         "I remember you as {memory:name}!"]
+    ],
+    [
+        r"my favorite (color|food|movie|book|song|animal) is (.*)",
+        (["I'll remember your favorite %1 is %2!",
+          "Got it! Your favorite %1 is %2."],
+         store_favorite_callback)
+    ],
+    [
+        r"what(?:'s| is) my favorite (color|food|movie|book|song|animal)\??",
+        (["I'll tell you what I know about your favorite %1..."],
+         get_favorite_callback)
+    ],
+    [
+        r"do you remember me\??",
+        ["Yes, you're {memory:name}! It's good to chat with you again.",
+         "Of course! You're {memory:name}."]
     ],
     
     # Name changing functionality
@@ -228,23 +342,13 @@ pairs = [
         r"(?:how(?:'s| is) the )?weather(?: like)? (?:in|at) ([\w\s]+)(?:\?)?",
         (["Fetching weather data..."], weather_callback)
     ],
-
-    # Jokes and humor
-    [
-        r"(tell me a joke|make me laugh|joke)",
-        ["Why don't scientists trust atoms? Because they make up everything!", 
-         "Parallel lines have so much in common... It’s a shame they’ll never meet."]
-    ],
-    [
-        r"(meme|funny picture)",
-        ["I’m a text-based bot, but here’s a meme idea: 'When you finally fix one bug and two more appear' 🐛💥"]
-    ],
     
     # Help and capabilities
     [
         r"(?:help|what can you do|your abilities)\??",
-        ["I can chat with you about various topics, remember your name, check weather, and even change my name if you'd like!",
-         "I'm a chatbot that can have conversations, remember names, check weather forecasts, and respond to basic queries."]
+        ["I can chat with you about various topics, remember your name and preferences, check weather, and even change my name if you'd like!",
+         "I'm a chatbot that can have conversations, remember your details, check weather forecasts, and respond to basic queries.",
+         "I can remember your name and preferences, tell you the weather, and chat with you about various topics!"]
     ],
     
     # Exit commands
