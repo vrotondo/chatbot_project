@@ -2,6 +2,7 @@
   "default_user": {
     "favorite_color": "black",
     "name": "Vincent",
-    "favorite_movie": "LOTR"
+    "favorite_movie": "LOTR",
+    "favorite_animal": "dinosaur"
   }
 }
