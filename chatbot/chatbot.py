@@ -449,6 +449,43 @@ class ImprovedChat(NLTKChat):
         except Exception as e:
             logger.error(f"Unexpected error generating response: {e}")
             return "I'm having trouble understanding right now. Could you try rephrasing that?"
+        
+    def set_user_id(self, user_id):
+        """Set the current user ID for memory storage"""
+        if user_id and isinstance(user_id, str):
+            self.current_user_id = user_id
+        else:
+            logger.warning(f"Attempted to set invalid user_id: {user_id}")
+
+    def converse(self, quit="quit"):
+        """Interact with the user in a console."""
+        print(f"Hi! I'm {self.bot_name}, your chatbot. Type '{quit}' to exit.")
+        
+        user_name = get_user_info(self.current_user_id, "name")
+        if user_name:
+            print(f"Welcome back, {user_name}! It's good to see you again.")
+        
+        while True:
+            try:
+                user_input = input("> ")
+                if user_input.lower() == quit:
+                    print("Goodbye!")
+                    break
+                
+                response = self.respond(user_input)
+                if response:
+                    print(response)
+                else:
+                    print("I'm not sure I understand. Can you rephrase that?")
+            except KeyboardInterrupt:
+                print("\nGoodbye!")
+                break
+            except EOFError:
+                print("\nGoodbye!")
+                break
+            except Exception as e:
+                logger.error(f"Unexpected error in conversation: {e}")
+                print("Sorry, I encountered an unexpected error. Let's continue our conversation.")
     
 def custom_response_selector(responses, previous_response=None, user_id=None):
     """
@@ -625,57 +662,6 @@ def set_user_personality_preference(user_id, style):
         bool: True if successful
     """
     return store_user_info(user_id, "personality_preference", style)
-    
-def set_user_id(self, user_id):
-    """Set the current user ID for memory storage"""
-    if user_id and isinstance(user_id, str):
-        self.current_user_id = user_id
-    else:
-        logger.warning(f"Attempted to set invalid user_id: {user_id}")
-
-# Then in custom_response_selector, add:
-    # Get user's personality preference if available
-    personality = get_user_info(user_id, "personality_preference") if user_id else None
-    
-    # Adjust weights based on user's personality preference
-    if personality:
-        for i, (response, weight) in enumerate(weighted_responses):
-            if personality == "formal" and re.search(r'\b(hello|greetings|indeed|certainly)\b', response.lower()):
-                weighted_responses[i] = (response, weight + 0.5)
-            elif personality == "casual" and re.search(r'\b(hey|hi|sure|cool)\b', response.lower()):
-                weighted_responses[i] = (response, weight + 0.5)
-            elif personality == "humorous" and any(w in response.lower() for w in ["!", "joke", "funny", "haha"]):
-                weighted_responses[i] = (response, weight + 0.5)
-    
-def converse(self, quit="quit"):
-    """Interact with the user in a console."""
-    print(f"Hi! I'm {self.bot_name}, your chatbot. Type '{quit}' to exit.")
-    
-    user_name = get_user_info(self.current_user_id, "name")
-    if user_name:
-        print(f"Welcome back, {user_name}! It's good to see you again.")
-    
-    while True:
-        try:
-            user_input = input("> ")
-            if user_input.lower() == quit:
-                print("Goodbye!")
-                break
-            
-            response = self.respond(user_input)
-            if response:
-                print(response)
-            else:
-                print("I'm not sure I understand. Can you rephrase that?")
-        except KeyboardInterrupt:
-            print("\nGoodbye!")
-            break
-        except EOFError:
-            print("\nGoodbye!")
-            break
-        except Exception as e:
-            logger.error(f"Unexpected error in conversation: {e}")
-            print("Sorry, I encountered an unexpected error. Let's continue our conversation.")
 
 # Callbacks for various functions
 def save_name_and_update(groups):
