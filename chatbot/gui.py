@@ -71,13 +71,17 @@ class ChatbotGUI:
             # Get response from chatbot
             response = self.chatbot.respond(message)
             
-            # Check if bot name might have changed (when using the name change feature)
-            if "call you" in message.lower() or "name you" in message.lower():
-                # Update window title with new name
-                self.root.after(0, lambda: self.root.title(f"Chat with {self.chatbot.bot_name}"))
+            # Update bot name for display
+            self.update_bot_name()
         
         # Queue bot response for display
         self.msg_queue.put(response)
+    
+    def update_bot_name(self):
+        """Update the GUI with the current bot name"""
+        global bot_name
+        # Update window title with new name
+        self.root.after(0, lambda: self.root.title(f"Chat with {self.chatbot.bot_name}"))
     
     def display_user_message(self, message):
         """Display user message in the chat log"""
@@ -123,7 +127,7 @@ class ChatbotGUI:
 def run_gui():
     """Run the chatbot GUI"""
     root = tk.Tk()
-    ChatbotGUI(root)
+    app = ChatbotGUI(root)
     root.mainloop()
 
 if __name__ == "__main__":

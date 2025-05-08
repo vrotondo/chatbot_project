@@ -50,46 +50,44 @@ class ImprovedChat(NLTKChat):
     """
     def __init__(self, pairs, reflections, bot_name):
         """Initialize with pairs, reflections, and bot name"""
-        # Compile regex patterns
-        compiled_pairs = []
-        for pattern, response in pairs:
-            compiled_pattern = re.compile(pattern, re.IGNORECASE)
-            compiled_pairs.append((compiled_pattern, response))
-        
-        super().__init__(compiled_pairs, reflections)
+        # Store the bot name
         self.bot_name = bot_name
+        
+        # Format pairs with the current bot name before passing to parent
+        formatted_pairs = []
+        for pattern, response in pairs:
+            # Handle the special case for the bot name in regex pattern
+            if "{bot_name}" in pattern:
+                pattern = pattern.format(bot_name=re.escape(bot_name))
+            
+            # Add to formatted pairs
+            formatted_pairs.append((pattern, response))
+        
+        # Call parent init with formatted pairs
+        super().__init__(formatted_pairs, reflections)
     
     def respond(self, user_input):
         """Generate a response to the user input."""
-        # Update pairs that use the bot name
-        self._update_bot_name_in_pairs()
-        
-        # Process the input against our patterns
-        for pattern, responses in self._pairs:
-            match = pattern.search(user_input)
-            if match:
-                # Handle response options with callbacks
-                if isinstance(responses, tuple):
-                    response_list, callback = responses
-                    response = random.choice(response_list)
-                    processed = self._wildcards(response, match)
-                    callback(match.groups())
-                    return processed
-                else:
-                    response = random.choice(responses)
-                    return self._wildcards(response, match)
-        
-        # No match found
-        return "I'm not sure I understand. Can you rephrase that?"
-    
-    def _update_bot_name_in_pairs(self):
-        """Update dynamic responses with current bot name"""
+        # Format responses that contain the bot name
         for i, (pattern, responses) in enumerate(self._pairs):
-            # Update responses that mention the bot name
             if isinstance(responses, list):
                 for j, response in enumerate(responses):
                     if isinstance(response, str) and "{bot_name}" in response:
                         self._pairs[i][1][j] = response.format(bot_name=self.bot_name)
+        
+        # Check for custom callback pairs
+        for pattern, response in self._pairs:
+            match = pattern.search(user_input)
+            if match and isinstance(response, tuple):
+                # This is a special case for callback functions
+                response_list, callback = response
+                chosen_response = random.choice(response_list)
+                processed = self._wildcards(chosen_response, match)
+                callback(match.groups())
+                return processed
+        
+        # Let parent class handle standard responses
+        return super().respond(user_input)
     
     def converse(self, quit="quit"):
         """Interact with the user in a console."""
@@ -105,6 +103,8 @@ class ImprovedChat(NLTKChat):
                 response = self.respond(user_input)
                 if response:
                     print(response)
+                else:
+                    print("I'm not sure I understand. Can you rephrase that?")
             except (KeyboardInterrupt, EOFError):
                 print("\nGoodbye!")
                 break
