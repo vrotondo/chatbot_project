@@ -450,6 +450,7 @@ class ImprovedChat(NLTKChat):
             logger.error(f"Unexpected error generating response: {e}")
             return "I'm having trouble understanding right now. Could you try rephrasing that?"
     
+    # First, move these functions outside the class
     def custom_response_selector(responses, previous_response=None, user_id=None):
         """
         Advanced response selector with nuanced randomization
@@ -514,6 +515,19 @@ class ImprovedChat(NLTKChat):
             weight += random.uniform(-0.1, 0.1)
             
             weighted_responses.append((response, weight))
+        
+        # Get user's personality preference if available
+        personality = get_user_info(user_id, "personality_preference") if user_id else None
+        
+        # Adjust weights based on user's personality preference
+        if personality:
+            for i, (response, weight) in enumerate(weighted_responses):
+                if personality == "formal" and re.search(r'\b(hello|greetings|indeed|certainly)\b', response.lower()):
+                    weighted_responses[i] = (response, weight + 0.5)
+                elif personality == "casual" and re.search(r'\b(hey|hi|sure|cool)\b', response.lower()):
+                    weighted_responses[i] = (response, weight + 0.5)
+                elif personality == "humorous" and any(w in response.lower() for w in ["!", "joke", "funny", "haha"]):
+                    weighted_responses[i] = (response, weight + 0.5)
         
         # Select response based on weights
         total_weight = sum(weight for _, weight in weighted_responses)
@@ -599,15 +613,7 @@ class ImprovedChat(NLTKChat):
             response += f" {random.choice(emojis)}"
         
         return response
-    
-    def set_user_id(self, user_id):
-        """Set the current user ID for memory storage"""
-        if user_id and isinstance(user_id, str):
-            self.current_user_id = user_id
-        else:
-            logger.warning(f"Attempted to set invalid user_id: {user_id}")
 
-    # Add this to your memory initialization part
     def set_user_personality_preference(user_id, style):
         """
         Set the user's preferred conversation style
@@ -620,6 +626,13 @@ class ImprovedChat(NLTKChat):
             bool: True if successful
         """
         return store_user_info(user_id, "personality_preference", style)
+    
+    def set_user_id(self, user_id):
+        """Set the current user ID for memory storage"""
+        if user_id and isinstance(user_id, str):
+            self.current_user_id = user_id
+        else:
+            logger.warning(f"Attempted to set invalid user_id: {user_id}")
 
     # Then in custom_response_selector, add:
         # Get user's personality preference if available
@@ -823,7 +836,6 @@ except Exception as e:
 
 # Define chatbot response patterns with improved formatting
 pairs = [
-    pairs = [
     # Basic greeting and name exchange with time-of-day variations
     [
         r"my name is (.*)",
@@ -942,6 +954,15 @@ pairs = [
         ["Goodbye! Have a great day!", "See you later!", "Until next time!"]
     ],
     
+    # Personality setting
+    [
+        r"(?:set|change|make) (?:your|the) (?:personality|tone|style) (?:to )?(formal|casual|humorous|friendly|professional)",
+        (["I'll adjust my conversation style to be more %1. Is this better?",
+        "I've changed my style to %1 mode. Let me know if you prefer something else.",
+        "I'll try to be more %1 in our conversations now."],
+        lambda groups: set_user_personality_preference("default_user", groups[0]) if groups else None)
+    ],
+    
     # Fallback response
     [
         r"(.*)",
@@ -956,14 +977,6 @@ pairs = [
             "I'm not quite sure what you mean by that.",
             "Could you try explaining that in a different way?"
         ]
-    ],
-    [
-        r"(?:set|change|make) (?:your|the) (?:personality|tone|style) (?:to )?(formal|casual|humorous|friendly|professional)",
-        (["I'll adjust my conversation style to be more %1. Is this better?",
-        "I've changed my style to %1 mode. Let me know if you prefer something else.",
-        "I'll try to be more %1 in our conversations now."],
-        lambda groups: set_user_personality_preference("default_user", groups[0]) if groups else None)
-    ],
     ]
 ]
 
