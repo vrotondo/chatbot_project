@@ -39,7 +39,7 @@ class ChatbotGUI:
         self.msg_queue = queue.Queue()
         
         # Welcome message
-        self.display_bot_message(f"Hi! I'm {bot_name}. How can I help you today?")
+        self.display_bot_message(f"Hi! I'm {bot_name}. How can I help you today?\n\nTry asking me about the weather in a city!")
         
         # Start checking the message queue
         self.check_messages()

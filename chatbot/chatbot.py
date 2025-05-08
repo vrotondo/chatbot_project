@@ -2,11 +2,50 @@ import json
 import re
 import os
 import random
+import requests  # Add this import for API requests
 from nltk.chat.util import Chat as NLTKChat, reflections
 
 # Path to config file - made relative to the script location
 CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config.json")
 DEFAULT_BOT_NAME = "Wicked"
+
+# Weather API configuration
+WEATHER_API_KEY = "11ca5bc346a77d53d4dc1277552ae50f"  # Your API key
+
+def get_weather(city):
+    """
+    Fetch weather information for a given city
+    
+    Args:
+        city (str): Name of the city
+        
+    Returns:
+        str: Weather information or error message
+    """
+    try:
+        url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_API_KEY}&units=metric"
+        response = requests.get(url)
+        data = response.json()
+        
+        if response.status_code == 200:
+            weather_description = data["weather"][0]["description"]
+            temperature = data["main"]["temp"]
+            feels_like = data["main"]["feels_like"]
+            humidity = data["main"]["humidity"]
+            
+            weather_info = (
+                f"Weather in {city}:\n"
+                f"• Condition: {weather_description.capitalize()}\n"
+                f"• Temperature: {temperature:.1f}°C (feels like {feels_like:.1f}°C)\n"
+                f"• Humidity: {humidity}%"
+            )
+            return weather_info
+        else:
+            return f"Sorry, I couldn't find weather information for '{city}'. Please check the city name and try again."
+    
+    except Exception as e:
+        print(f"Weather API error: {e}")
+        return f"Sorry, there was an error fetching weather data for '{city}'."
 
 def load_name():
     """Load the bot name from config file or use default"""
@@ -82,8 +121,16 @@ class ImprovedChat(NLTKChat):
                 # This is a special case for callback functions
                 response_list, callback = response
                 chosen_response = random.choice(response_list)
+                
+                # Execute the callback with matched groups
+                callback_result = callback(match.groups())
+                
+                # If callback returns a value, use it instead of the response template
+                if callback_result:
+                    return callback_result
+                
+                # Otherwise, process the template response
                 processed = self._wildcards(chosen_response, match)
-                callback(match.groups())
                 return processed
         
         # Let parent class handle standard responses
@@ -117,6 +164,14 @@ def save_name_and_update(new_name):
         save_name(new_name)
         return True
     return False
+
+# Weather callback for pattern matching
+def weather_callback(groups):
+    """Process weather request and return weather information"""
+    if groups and groups[0]:
+        city = groups[0].strip()
+        return get_weather(city)
+    return None
 
 # Initialize bot name
 bot_name = load_name()
@@ -160,11 +215,36 @@ pairs = [
         ["Yes, I'm listening! About '%1'...", "I'm here! Regarding '%1'..."]
     ],
     
+    # WEATHER FUNCTIONALITY
+    [
+        r"(?:what(?:'s| is) the )?weather(?: like)? in ([\w\s]+)(?:\?)?",
+        (["Let me check the weather for you..."], weather_callback)
+    ],
+    [
+        r"(?:what(?:'s| is) the )?temperature(?: like)? in ([\w\s]+)(?:\?)?",
+        (["Checking temperature information..."], weather_callback)
+    ],
+    [
+        r"(?:how(?:'s| is) the )?weather(?: like)? (?:in|at) ([\w\s]+)(?:\?)?",
+        (["Fetching weather data..."], weather_callback)
+    ],
+
+    # Jokes and humor
+    [
+        r"(tell me a joke|make me laugh|joke)",
+        ["Why don't scientists trust atoms? Because they make up everything!", 
+         "Parallel lines have so much in common... It’s a shame they’ll never meet."]
+    ],
+    [
+        r"(meme|funny picture)",
+        ["I’m a text-based bot, but here’s a meme idea: 'When you finally fix one bug and two more appear' 🐛💥"]
+    ],
+    
     # Help and capabilities
     [
         r"(?:help|what can you do|your abilities)\??",
-        ["I can chat with you about various topics, remember your name, and even change my name if you'd like!",
-         "I'm a simple chatbot that can have conversations, remember names, and respond to basic queries."]
+        ["I can chat with you about various topics, remember your name, check weather, and even change my name if you'd like!",
+         "I'm a chatbot that can have conversations, remember names, check weather forecasts, and respond to basic queries."]
     ],
     
     # Exit commands
