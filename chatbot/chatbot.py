@@ -450,233 +450,232 @@ class ImprovedChat(NLTKChat):
             logger.error(f"Unexpected error generating response: {e}")
             return "I'm having trouble understanding right now. Could you try rephrasing that?"
     
-    # First, move these functions outside the class
-    def custom_response_selector(responses, previous_response=None, user_id=None):
-        """
-        Advanced response selector with nuanced randomization
-        
-        Args:
-            responses: List of possible responses
-            previous_response: Last response given (to avoid repetition)
-            user_id: ID of the current user (for personalization)
-            
-        Returns:
-            str: A carefully selected response
-        """
-        if not responses:
-            return "I'm not sure what to say."
-        
-        # If there's only one response, we have no choice
-        if len(responses) == 1:
-            return responses[0]
-        
-        # Get current time to customize responses by time of day
-        current_hour = datetime.now().hour
-        
-        # Morning: 5am-11am, Afternoon: 12pm-5pm, Evening: 6pm-9pm, Night: 10pm-4am
-        time_of_day = "morning" if 5 <= current_hour < 12 else \
-                    "afternoon" if 12 <= current_hour < 18 else \
-                    "evening" if 18 <= current_hour < 22 else "night"
-        
-        # Filter out the previous response to avoid repetition
-        available_responses = [r for r in responses if r != previous_response]
-        
-        # If we filtered all responses, reset to original list
-        if not available_responses:
-            available_responses = responses
-        
-        # Assign weights to responses for more natural selection
-        weighted_responses = []
-        
-        for response in available_responses:
-            # Base weight is 1.0
-            weight = 1.0
-            
-            # Prioritize responses appropriate for the time of day
-            if time_of_day == "morning" and any(word in response.lower() for word in ["morning", "day", "today"]):
-                weight += 0.5
-            elif time_of_day == "afternoon" and "afternoon" in response.lower():
-                weight += 0.5
-            elif time_of_day == "evening" and any(word in response.lower() for word in ["evening", "tonight"]):
-                weight += 0.5
-            elif time_of_day == "night" and any(word in response.lower() for word in ["night", "late"]):
-                weight += 0.5
-                
-            # Prefer shorter responses normally, longer responses for complex questions
-            response_length = len(response.split())
-            if response_length < 10:  # Short and sweet responses
-                weight += 0.3
-            
-            # Prefer responses with emoji for a friendlier tone (adjust by preference)
-            if any(emoji in response for emoji in ["😊", "👍", "🌟", "✨", "👋"]):
-                weight += 0.2
-                
-            # Add random slight variation to prevent predictable patterns
-            weight += random.uniform(-0.1, 0.1)
-            
-            weighted_responses.append((response, weight))
-        
-        # Get user's personality preference if available
-        personality = get_user_info(user_id, "personality_preference") if user_id else None
-        
-        # Adjust weights based on user's personality preference
-        if personality:
-            for i, (response, weight) in enumerate(weighted_responses):
-                if personality == "formal" and re.search(r'\b(hello|greetings|indeed|certainly)\b', response.lower()):
-                    weighted_responses[i] = (response, weight + 0.5)
-                elif personality == "casual" and re.search(r'\b(hey|hi|sure|cool)\b', response.lower()):
-                    weighted_responses[i] = (response, weight + 0.5)
-                elif personality == "humorous" and any(w in response.lower() for w in ["!", "joke", "funny", "haha"]):
-                    weighted_responses[i] = (response, weight + 0.5)
-        
-        # Select response based on weights
-        total_weight = sum(weight for _, weight in weighted_responses)
-        random_val = random.uniform(0, total_weight)
-        
-        current_weight = 0
-        for response, weight in weighted_responses:
-            current_weight += weight
-            if random_val <= current_weight:
-                selected_response = response
-                break
-        else:
-            # Fallback if something goes wrong with the weighting
-            selected_response = random.choice(available_responses)
-        
-        # Add slight variations to responses
-        selected_response = add_response_variation(selected_response, time_of_day, user_id)
-        
-        return selected_response
-
-    def add_response_variation(response, time_of_day, user_id=None):
-        """
-        Add slight variations to responses to make them more natural
-        
-        Args:
-            response: The selected response
-            time_of_day: Current time of day
-            user_id: ID of the current user
-            
-        Returns:
-            str: The response with variations
-        """
-        # Get user's name if available
-        user_name = get_user_info(user_id, "name") if user_id else None
-        
-        # Add time-of-day greeting occasionally (20% chance)
-        if random.random() < 0.2:
-            time_greeting = {
-                "morning": "Good morning! ",
-                "afternoon": "Good afternoon! ",
-                "evening": "Good evening! ",
-                "night": "Hi there! "
-            }.get(time_of_day, "")
-            
-            # Add user's name to greeting if available
-            if user_name and random.random() < 0.5:
-                time_greeting = time_greeting.rstrip() + f", {user_name}! "
-                
-            # Only prepend greeting if the response doesn't already have one
-            greeting_patterns = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"]
-            if not any(response.lower().startswith(greeting) for greeting in greeting_patterns):
-                response = time_greeting + response
-        
-        # Add filler words occasionally (10% chance)
-        if random.random() < 0.1:
-            fillers = ["Well, ", "Hmm, ", "Let's see, ", "Actually, ", "You know, "]
-            if not any(response.startswith(filler) for filler in fillers):
-                response = random.choice(fillers) + response[0].lower() + response[1:]
-        
-        # Add thinking sounds occasionally (5% chance)
-        if random.random() < 0.05:
-            thinking = ["hmm", "uh", "um", "let me think"]
-            response = response.replace(".", f"... {random.choice(thinking)}.")
-        
-        # Add emphasis to important words (15% chance)
-        if random.random() < 0.15:
-            # Find words to emphasize (longer words are usually more important)
-            words = response.split()
-            for i, word in enumerate(words):
-                if len(word) > 5 and random.random() < 0.3:
-                    # Different emphasis styles
-                    emphasis_style = random.choice([
-                        lambda w: w.upper(),  # ALL CAPS
-                        lambda w: f"*{w}*",    # *asterisks*
-                        lambda w: f"_{w}_"     # _underscores_
-                    ])
-                    words[i] = emphasis_style(word)
-            response = " ".join(words)
-        
-        # Add friendly emoji occasionally (25% chance for certain message types)
-        if random.random() < 0.25 and "?" not in response and not response.endswith("!"):
-            emojis = ["😊", "👍", "✨", "🌟", "👋"]
-            response += f" {random.choice(emojis)}"
-        
-        return response
-
-    def set_user_personality_preference(user_id, style):
-        """
-        Set the user's preferred conversation style
-        
-        Args:
-            user_id (str): User identifier
-            style (str): Preferred style (formal, casual, humorous, etc.)
-            
-        Returns:
-            bool: True if successful
-        """
-        return store_user_info(user_id, "personality_preference", style)
+def custom_response_selector(responses, previous_response=None, user_id=None):
+    """
+    Advanced response selector with nuanced randomization
     
-    def set_user_id(self, user_id):
-        """Set the current user ID for memory storage"""
-        if user_id and isinstance(user_id, str):
-            self.current_user_id = user_id
-        else:
-            logger.warning(f"Attempted to set invalid user_id: {user_id}")
-
-    # Then in custom_response_selector, add:
-        # Get user's personality preference if available
-        personality = get_user_info(user_id, "personality_preference") if user_id else None
+    Args:
+        responses: List of possible responses
+        previous_response: Last response given (to avoid repetition)
+        user_id: ID of the current user (for personalization)
         
-        # Adjust weights based on user's personality preference
-        if personality:
-            for i, (response, weight) in enumerate(weighted_responses):
-                if personality == "formal" and re.search(r'\b(hello|greetings|indeed|certainly)\b', response.lower()):
-                    weighted_responses[i] = (response, weight + 0.5)
-                elif personality == "casual" and re.search(r'\b(hey|hi|sure|cool)\b', response.lower()):
-                    weighted_responses[i] = (response, weight + 0.5)
-                elif personality == "humorous" and any(w in response.lower() for w in ["!", "joke", "funny", "haha"]):
-                    weighted_responses[i] = (response, weight + 0.5)
+    Returns:
+        str: A carefully selected response
+    """
+    if not responses:
+        return "I'm not sure what to say."
     
-    def converse(self, quit="quit"):
-        """Interact with the user in a console."""
-        print(f"Hi! I'm {self.bot_name}, your chatbot. Type '{quit}' to exit.")
+    # If there's only one response, we have no choice
+    if len(responses) == 1:
+        return responses[0]
+    
+    # Get current time to customize responses by time of day
+    current_hour = datetime.now().hour
+    
+    # Morning: 5am-11am, Afternoon: 12pm-5pm, Evening: 6pm-9pm, Night: 10pm-4am
+    time_of_day = "morning" if 5 <= current_hour < 12 else \
+                "afternoon" if 12 <= current_hour < 18 else \
+                "evening" if 18 <= current_hour < 22 else "night"
+    
+    # Filter out the previous response to avoid repetition
+    available_responses = [r for r in responses if r != previous_response]
+    
+    # If we filtered all responses, reset to original list
+    if not available_responses:
+        available_responses = responses
+    
+    # Assign weights to responses for more natural selection
+    weighted_responses = []
+    
+    for response in available_responses:
+        # Base weight is 1.0
+        weight = 1.0
         
-        user_name = get_user_info(self.current_user_id, "name")
-        if user_name:
-            print(f"Welcome back, {user_name}! It's good to see you again.")
+        # Prioritize responses appropriate for the time of day
+        if time_of_day == "morning" and any(word in response.lower() for word in ["morning", "day", "today"]):
+            weight += 0.5
+        elif time_of_day == "afternoon" and "afternoon" in response.lower():
+            weight += 0.5
+        elif time_of_day == "evening" and any(word in response.lower() for word in ["evening", "tonight"]):
+            weight += 0.5
+        elif time_of_day == "night" and any(word in response.lower() for word in ["night", "late"]):
+            weight += 0.5
+            
+        # Prefer shorter responses normally, longer responses for complex questions
+        response_length = len(response.split())
+        if response_length < 10:  # Short and sweet responses
+            weight += 0.3
         
-        while True:
-            try:
-                user_input = input("> ")
-                if user_input.lower() == quit:
-                    print("Goodbye!")
-                    break
-                
-                response = self.respond(user_input)
-                if response:
-                    print(response)
-                else:
-                    print("I'm not sure I understand. Can you rephrase that?")
-            except KeyboardInterrupt:
-                print("\nGoodbye!")
+        # Prefer responses with emoji for a friendlier tone (adjust by preference)
+        if any(emoji in response for emoji in ["😊", "👍", "🌟", "✨", "👋"]):
+            weight += 0.2
+            
+        # Add random slight variation to prevent predictable patterns
+        weight += random.uniform(-0.1, 0.1)
+        
+        weighted_responses.append((response, weight))
+    
+    # Get user's personality preference if available
+    personality = get_user_info(user_id, "personality_preference") if user_id else None
+    
+    # Adjust weights based on user's personality preference
+    if personality:
+        for i, (response, weight) in enumerate(weighted_responses):
+            if personality == "formal" and re.search(r'\b(hello|greetings|indeed|certainly)\b', response.lower()):
+                weighted_responses[i] = (response, weight + 0.5)
+            elif personality == "casual" and re.search(r'\b(hey|hi|sure|cool)\b', response.lower()):
+                weighted_responses[i] = (response, weight + 0.5)
+            elif personality == "humorous" and any(w in response.lower() for w in ["!", "joke", "funny", "haha"]):
+                weighted_responses[i] = (response, weight + 0.5)
+    
+    # Select response based on weights
+    total_weight = sum(weight for _, weight in weighted_responses)
+    random_val = random.uniform(0, total_weight)
+    
+    current_weight = 0
+    for response, weight in weighted_responses:
+        current_weight += weight
+        if random_val <= current_weight:
+            selected_response = response
+            break
+    else:
+        # Fallback if something goes wrong with the weighting
+        selected_response = random.choice(available_responses)
+    
+    # Add slight variations to responses
+    selected_response = add_response_variation(selected_response, time_of_day, user_id)
+    
+    return selected_response
+
+def add_response_variation(response, time_of_day, user_id=None):
+    """
+    Add slight variations to responses to make them more natural
+    
+    Args:
+        response: The selected response
+        time_of_day: Current time of day
+        user_id: ID of the current user
+        
+    Returns:
+        str: The response with variations
+    """
+    # Get user's name if available
+    user_name = get_user_info(user_id, "name") if user_id else None
+    
+    # Add time-of-day greeting occasionally (20% chance)
+    if random.random() < 0.2:
+        time_greeting = {
+            "morning": "Good morning! ",
+            "afternoon": "Good afternoon! ",
+            "evening": "Good evening! ",
+            "night": "Hi there! "
+        }.get(time_of_day, "")
+        
+        # Add user's name to greeting if available
+        if user_name and random.random() < 0.5:
+            time_greeting = time_greeting.rstrip() + f", {user_name}! "
+            
+        # Only prepend greeting if the response doesn't already have one
+        greeting_patterns = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"]
+        if not any(response.lower().startswith(greeting) for greeting in greeting_patterns):
+            response = time_greeting + response
+    
+    # Add filler words occasionally (10% chance)
+    if random.random() < 0.1:
+        fillers = ["Well, ", "Hmm, ", "Let's see, ", "Actually, ", "You know, "]
+        if not any(response.startswith(filler) for filler in fillers):
+            response = random.choice(fillers) + response[0].lower() + response[1:]
+    
+    # Add thinking sounds occasionally (5% chance)
+    if random.random() < 0.05:
+        thinking = ["hmm", "uh", "um", "let me think"]
+        response = response.replace(".", f"... {random.choice(thinking)}.")
+    
+    # Add emphasis to important words (15% chance)
+    if random.random() < 0.15:
+        # Find words to emphasize (longer words are usually more important)
+        words = response.split()
+        for i, word in enumerate(words):
+            if len(word) > 5 and random.random() < 0.3:
+                # Different emphasis styles
+                emphasis_style = random.choice([
+                    lambda w: w.upper(),  # ALL CAPS
+                    lambda w: f"*{w}*",    # *asterisks*
+                    lambda w: f"_{w}_"     # _underscores_
+                ])
+                words[i] = emphasis_style(word)
+        response = " ".join(words)
+    
+    # Add friendly emoji occasionally (25% chance for certain message types)
+    if random.random() < 0.25 and "?" not in response and not response.endswith("!"):
+        emojis = ["😊", "👍", "✨", "🌟", "👋"]
+        response += f" {random.choice(emojis)}"
+    
+    return response
+
+def set_user_personality_preference(user_id, style):
+    """
+    Set the user's preferred conversation style
+    
+    Args:
+        user_id (str): User identifier
+        style (str): Preferred style (formal, casual, humorous, etc.)
+        
+    Returns:
+        bool: True if successful
+    """
+    return store_user_info(user_id, "personality_preference", style)
+    
+def set_user_id(self, user_id):
+    """Set the current user ID for memory storage"""
+    if user_id and isinstance(user_id, str):
+        self.current_user_id = user_id
+    else:
+        logger.warning(f"Attempted to set invalid user_id: {user_id}")
+
+# Then in custom_response_selector, add:
+    # Get user's personality preference if available
+    personality = get_user_info(user_id, "personality_preference") if user_id else None
+    
+    # Adjust weights based on user's personality preference
+    if personality:
+        for i, (response, weight) in enumerate(weighted_responses):
+            if personality == "formal" and re.search(r'\b(hello|greetings|indeed|certainly)\b', response.lower()):
+                weighted_responses[i] = (response, weight + 0.5)
+            elif personality == "casual" and re.search(r'\b(hey|hi|sure|cool)\b', response.lower()):
+                weighted_responses[i] = (response, weight + 0.5)
+            elif personality == "humorous" and any(w in response.lower() for w in ["!", "joke", "funny", "haha"]):
+                weighted_responses[i] = (response, weight + 0.5)
+    
+def converse(self, quit="quit"):
+    """Interact with the user in a console."""
+    print(f"Hi! I'm {self.bot_name}, your chatbot. Type '{quit}' to exit.")
+    
+    user_name = get_user_info(self.current_user_id, "name")
+    if user_name:
+        print(f"Welcome back, {user_name}! It's good to see you again.")
+    
+    while True:
+        try:
+            user_input = input("> ")
+            if user_input.lower() == quit:
+                print("Goodbye!")
                 break
-            except EOFError:
-                print("\nGoodbye!")
-                break
-            except Exception as e:
-                logger.error(f"Unexpected error in conversation: {e}")
-                print("Sorry, I encountered an unexpected error. Let's continue our conversation.")
+            
+            response = self.respond(user_input)
+            if response:
+                print(response)
+            else:
+                print("I'm not sure I understand. Can you rephrase that?")
+        except KeyboardInterrupt:
+            print("\nGoodbye!")
+            break
+        except EOFError:
+            print("\nGoodbye!")
+            break
+        except Exception as e:
+            logger.error(f"Unexpected error in conversation: {e}")
+            print("Sorry, I encountered an unexpected error. Let's continue our conversation.")
 
 # Callbacks for various functions
 def save_name_and_update(groups):

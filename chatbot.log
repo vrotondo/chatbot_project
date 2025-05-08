@@ -13,3 +13,12 @@
 2025-05-08 14:14:30,867 - chatbot - INFO - Initializing chatbot module
 2025-05-08 14:14:30,868 - chatbot - INFO - Successfully loaded memory from file
 2025-05-08 14:14:30,869 - chatbot - INFO - Successfully loaded bot name: Wicked
+2025-05-08 14:48:00,356 - chatbot - INFO - Initializing chatbot module
+2025-05-08 14:48:00,357 - chatbot - INFO - Successfully loaded memory from file
+2025-05-08 14:48:00,358 - chatbot - INFO - Successfully loaded bot name: Wicked
+2025-05-08 14:48:04,137 - chatbot - ERROR - Error processing pattern match: name 'custom_response_selector' is not defined
+2025-05-08 14:48:06,493 - chatbot - ERROR - Error processing pattern match: name 'custom_response_selector' is not defined
+2025-05-08 14:48:08,653 - chatbot - ERROR - Error processing pattern match: name 'custom_response_selector' is not defined
+2025-05-08 14:50:07,908 - chatbot - INFO - Initializing chatbot module
+2025-05-08 14:50:07,909 - chatbot - INFO - Successfully loaded memory from file
+2025-05-08 14:50:07,910 - chatbot - INFO - Successfully loaded bot name: Wicked
