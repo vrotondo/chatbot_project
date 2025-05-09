@@ -1,0 +1,257 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with {{ bot_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background-color: #4A90E2;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            margin-bottom: 5px;
+            word-wrap: break-word;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background-color: #E9E9EB;
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: #4A90E2;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .sender {
+            font-size: 0.8rem;
+            margin-bottom: 3px;
+            font-weight: bold;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            background-color: #f1f1f1;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 20px;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        .chat-input button {
+            background-color: #4A90E2;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .chat-input button:hover {
+            background-color: #3A80D2;
+        }
+
+        .thinking {
+            align-self: flex-start;
+            color: #777;
+            font-style: italic;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <div class="chat-header">Chat with {{ bot_name }}</div>
+        <div class="chat-messages" id="chat-messages">
+            <!-- Messages will be added here dynamically -->
+        </div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type your message..." autofocus>
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Store user ID in session storage
+        const userId = sessionStorage.getItem('userId') || 'user_' + Math.random().toString(36).substring(2, 10);
+        sessionStorage.setItem('userId', userId);
+
+        // Get DOM elements
+        const messagesContainer = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+
+        // Add event listeners
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Add welcome message
+        window.addEventListener('load', function () {
+            addBotMessage("{{ bot_name }}", "Hi there! I'm {{ bot_name }}. How can I help you today?");
+        });
+
+        // Function to send message
+        function sendMessage() {
+            const message = userInput.value.trim();
+
+            if (message.length === 0) return;
+
+            // Add user message to chat
+            addUserMessage("You", message);
+            userInput.value = '';
+            userInput.focus();
+
+            // Add thinking indicator
+            const thinkingElement = document.createElement('div');
+            thinkingElement.className = 'thinking';
+            thinkingElement.id = 'thinking-indicator';
+            thinkingElement.textContent = '{{ bot_name }} is typing...';
+            messagesContainer.appendChild(thinkingElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // Send message to server
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    user_id: userId
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Remove thinking indicator
+                    const thinkingElement = document.getElementById('thinking-indicator');
+                    if (thinkingElement) {
+                        thinkingElement.remove();
+                    }
+
+                    // Add bot message
+                    addBotMessage(data.bot_name || "{{ bot_name }}", data.response);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+
+                    // Remove thinking indicator
+                    const thinkingElement = document.getElementById('thinking-indicator');
+                    if (thinkingElement) {
+                        thinkingElement.remove();
+                    }
+
+                    // Add error message
+                    addBotMessage("{{ bot_name }}", "Sorry, I encountered an error processing your message. Please try again.");
+                });
+        }
+
+        // Function to add user message
+        function addUserMessage(sender, message) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message user-message';
+
+            const senderElement = document.createElement('div');
+            senderElement.className = 'sender';
+            senderElement.textContent = sender;
+
+            const contentElement = document.createElement('div');
+            contentElement.textContent = message;
+
+            messageElement.appendChild(senderElement);
+            messageElement.appendChild(contentElement);
+            messagesContainer.appendChild(messageElement);
+
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Function to add bot message
+        function addBotMessage(sender, message) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message bot-message';
+
+            const senderElement = document.createElement('div');
+            senderElement.className = 'sender';
+            senderElement.textContent = sender;
+
+            const contentElement = document.createElement('div');
+
+            // Process markdown-like formatting in messages
+            let formattedMessage = message
+                .replace(/\*([^*]+)\*/g, '<strong>$1</strong>')  // Bold text
+                .replace(/_([^_]+)_/g, '<em>$1</em>')            // Italic text
+                .replace(/\n/g, '<br>');                         // Line breaks
+
+            contentElement.innerHTML = formattedMessage;
+
+            messageElement.appendChild(senderElement);
+            messageElement.appendChild(contentElement);
+            messagesContainer.appendChild(messageElement);
+
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>
