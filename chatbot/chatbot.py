@@ -839,6 +839,16 @@ except Exception as e:
 pairs = [
     # Basic greeting and name exchange with time-of-day variations
     [
+        r"(?:hi|hello|hey|greetings|howdy|what's up|hola)(?:\s|$|[!?])",
+        ["Hello there! How can I help you today?", 
+         "Hi! How are you doing?",
+         "Hey! What can I do for you?",
+         "Greetings! How can I assist you?",
+         "Hello! It's nice to chat with you.",
+         "Hi there! What's on your mind today?"]
+    ],
+    
+    [
         r"my name is (.*)",
         (["Hello %1! I'll remember your name.", 
           "Nice to meet you, %1! I'll remember that.",
