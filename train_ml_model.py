@@ -22,6 +22,35 @@ def main():
     if script_dir not in sys.path:
         sys.path.append(script_dir)
     
+    # First, check if NLTK data is available
+    try:
+        import nltk
+        nltk_resources = ['punkt', 'wordnet', 'stopwords']
+        missing_resources = []
+        
+        # Check each resource
+        for resource in nltk_resources:
+            try:
+                if resource == 'punkt':
+                    nltk.data.find('tokenizers/punkt')
+                elif resource == 'wordnet':
+                    nltk.data.find('corpora/wordnet')
+                elif resource == 'stopwords':
+                    nltk.data.find('corpora/stopwords')
+            except LookupError:
+                missing_resources.append(resource)
+        
+        # If any resources are missing, suggest running the download script
+        if missing_resources:
+            logger.error(f"Missing NLTK resources: {', '.join(missing_resources)}")
+            logger.error("Please run the download_nltk_data.py script first:")
+            logger.error("python download_nltk_data.py")
+            return 1
+            
+    except ImportError:
+        logger.error("NLTK is not installed. Please install it with: pip install nltk")
+        return 1
+    
     try:
         # Import ML engine
         from chatbot.ml_engine import intent_classifier, create_sample_training_data

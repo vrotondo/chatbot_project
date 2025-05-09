@@ -44,15 +44,38 @@ class IntentClassifier:
         
         # Initialize NLTK resources
         try:
+            # Check if NLTK data is available
             nltk.data.find('tokenizers/punkt')
             nltk.data.find('corpora/wordnet')
             nltk.data.find('corpora/stopwords')
-        except LookupError:
-            logger.info("Downloading required NLTK resources...")
-            nltk.download('punkt', quiet=True)
-            nltk.download('wordnet', quiet=True)
-            nltk.download('stopwords', quiet=True)
-            logger.info("NLTK resources downloaded")
+            logger.info("NLTK resources found")
+        except LookupError as e:
+            logger.warning(f"NLTK resource not found: {e}")
+            logger.info("Attempting to download required NLTK resources...")
+            try:
+                # Create a directory for NLTK data in our project
+                nltk_data_dir = os.path.join(DATA_DIR, "nltk_data")
+                os.makedirs(nltk_data_dir, exist_ok=True)
+                
+                # Add our custom path
+                nltk.data.path.append(nltk_data_dir)
+                
+                # Download required resources
+                nltk.download('punkt', download_dir=nltk_data_dir, quiet=True)
+                nltk.download('wordnet', download_dir=nltk_data_dir, quiet=True)
+                nltk.download('stopwords', download_dir=nltk_data_dir, quiet=True)
+                
+                logger.info(f"NLTK resources downloaded to {nltk_data_dir}")
+            except Exception as dl_error:
+                logger.error(f"Failed to download NLTK resources: {dl_error}")
+                logger.error("Please run download_nltk_data.py script separately")
+                
+                # Initialize a basic pipeline even without NLTK
+                self.pipeline = Pipeline([
+                    ('vectorizer', TfidfVectorizer()),
+                    ('classifier', SVC(probability=True))
+                ])
+                return
         
         # Load existing model if available
         if os.path.exists(MODEL_PATH):
