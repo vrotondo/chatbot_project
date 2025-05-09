@@ -44,38 +44,22 @@ class IntentClassifier:
         
         # Initialize NLTK resources
         try:
-            # Check if NLTK data is available
-            nltk.data.find('tokenizers/punkt')
-            nltk.data.find('corpora/wordnet')
-            nltk.data.find('corpora/stopwords')
-            logger.info("NLTK resources found")
-        except LookupError as e:
-            logger.warning(f"NLTK resource not found: {e}")
-            logger.info("Attempting to download required NLTK resources...")
-            try:
-                # Create a directory for NLTK data in our project
-                nltk_data_dir = os.path.join(DATA_DIR, "nltk_data")
-                os.makedirs(nltk_data_dir, exist_ok=True)
-                
-                # Add our custom path
-                nltk.data.path.append(nltk_data_dir)
-                
-                # Download required resources
-                nltk.download('punkt', download_dir=nltk_data_dir, quiet=True)
-                nltk.download('wordnet', download_dir=nltk_data_dir, quiet=True)
-                nltk.download('stopwords', download_dir=nltk_data_dir, quiet=True)
-                
-                logger.info(f"NLTK resources downloaded to {nltk_data_dir}")
-            except Exception as dl_error:
-                logger.error(f"Failed to download NLTK resources: {dl_error}")
-                logger.error("Please run download_nltk_data.py script separately")
-                
-                # Initialize a basic pipeline even without NLTK
-                self.pipeline = Pipeline([
-                    ('vectorizer', TfidfVectorizer()),
-                    ('classifier', SVC(probability=True))
-                ])
-                return
+            # Import NLTK modules after path setup
+            from nltk.tokenize import word_tokenize
+            from nltk.stem import WordNetLemmatizer
+            from nltk.corpus import stopwords
+            
+            logger.info("NLTK modules imported successfully")
+        except ImportError as e:
+            logger.error(f"Failed to import NLTK modules: {e}")
+            logger.error("Please run download_nltk_data.py script first")
+            
+            # Initialize a basic pipeline even without NLTK
+            self.pipeline = Pipeline([
+                ('vectorizer', TfidfVectorizer()),
+                ('classifier', SVC(probability=True))
+            ])
+            return
         
         # Load existing model if available
         if os.path.exists(MODEL_PATH):
@@ -99,18 +83,39 @@ class IntentClassifier:
         Returns:
             list: Processed tokens
         """
-        # Convert to lowercase and tokenize
-        tokens = word_tokenize(text.lower())
-        
-        # Get stopwords
-        stop_words = set(stopwords.words('english'))
-        
-        # Initialize lemmatizer
-        lemmatizer = WordNetLemmatizer()
-        
-        # Filter out stopwords and lemmatize remaining tokens
-        return [lemmatizer.lemmatize(token) for token in tokens 
-                if token.isalpha() and token not in stop_words]
+        try:
+            # Import NLTK components here to ensure they're initialized properly
+            from nltk.tokenize import word_tokenize
+            from nltk.stem import WordNetLemmatizer
+            from nltk.corpus import stopwords
+            
+            # Convert to lowercase and tokenize
+            tokens = word_tokenize(text.lower())
+            
+            # Get stopwords
+            stop_words = set(stopwords.words('english'))
+            
+            # Initialize lemmatizer
+            lemmatizer = WordNetLemmatizer()
+            
+            # Test lemmatizer with a single word to see if wordnet is working
+            try:
+                lemmatizer.lemmatize("testing")
+            except LookupError as e:
+                logger.warning(f"WordNet lookup failed: {e}")
+                logger.info("Using simplified tokenization without lemmatization")
+                # Still use stopwords but skip lemmatization
+                return [token for token in tokens 
+                        if token.isalpha() and token not in stop_words]
+            
+            # Filter out stopwords and lemmatize remaining tokens
+            return [lemmatizer.lemmatize(token) for token in tokens 
+                    if token.isalpha() and token not in stop_words]
+                    
+        except Exception as e:
+            logger.error(f"Error in tokenization: {e}")
+            # Fallback simple tokenization
+            return text.lower().split()
     
     def train(self, X=None, y=None, data_path=None, test_size=0.2):
         """

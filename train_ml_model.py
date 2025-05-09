@@ -22,33 +22,24 @@ def main():
     if script_dir not in sys.path:
         sys.path.append(script_dir)
     
-    # First, check if NLTK data is available
-    try:
+    # First, set up the NLTK data path
+    nltk_data_dir = os.path.join(script_dir, "nltk_data")
+    if os.path.exists(nltk_data_dir):
         import nltk
-        nltk_resources = ['punkt', 'wordnet', 'stopwords']
-        missing_resources = []
+        if nltk_data_dir not in nltk.data.path:
+            nltk.data.path.insert(0, nltk_data_dir)
+        logger.info(f"Added NLTK data path: {nltk_data_dir}")
         
-        # Check each resource
-        for resource in nltk_resources:
-            try:
-                if resource == 'punkt':
-                    nltk.data.find('tokenizers/punkt')
-                elif resource == 'wordnet':
-                    nltk.data.find('corpora/wordnet')
-                elif resource == 'stopwords':
-                    nltk.data.find('corpora/stopwords')
-            except LookupError:
-                missing_resources.append(resource)
-        
-        # If any resources are missing, suggest running the download script
-        if missing_resources:
-            logger.error(f"Missing NLTK resources: {', '.join(missing_resources)}")
-            logger.error("Please run the download_nltk_data.py script first:")
-            logger.error("python download_nltk_data.py")
-            return 1
-            
-    except ImportError:
-        logger.error("NLTK is not installed. Please install it with: pip install nltk")
+        # Check for installation marker
+        if os.path.exists(os.path.join(nltk_data_dir, 'NLTK_INSTALLED')):
+            logger.info("NLTK data installation verified")
+        else:
+            logger.warning("NLTK data directory exists but may not be complete")
+            logger.warning("Consider running download_nltk_data.py again")
+    else:
+        logger.error(f"NLTK data directory not found at: {nltk_data_dir}")
+        logger.error("Please run the download_nltk_data.py script first:")
+        logger.error("python download_nltk_data.py")
         return 1
     
     try:
