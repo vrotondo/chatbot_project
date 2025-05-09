@@ -370,6 +370,22 @@ class ImprovedChat(NLTKChat):
             return "You didn't say anything. How can I help you?"
             
         try:
+            # Check if ML enhancement is available
+            try:
+                from .ml_integration import enhance_chatbot_response
+                # Try to enhance response with ML
+                original_response = super().respond(user_input)
+                enhanced_response = enhance_chatbot_response(user_input, original_response, self)
+                return enhanced_response
+            except ImportError:
+                # ML module not available, continue with pattern matching
+                logger.info("ML enhancement not available, using standard pattern matching")
+                pass
+            except Exception as e:
+                # Something went wrong with ML, log and continue with pattern matching
+                logger.error(f"Error using ML enhancement: {e}")
+                pass
+            
             # Format responses that contain the bot name
             for i, (pattern, responses) in enumerate(self._pairs):
                 if isinstance(responses, list):
