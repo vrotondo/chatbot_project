@@ -35,3 +35,25 @@
 2025-05-09 10:00:34,668 - werkzeug - WARNING -  * Debugger is active!
 2025-05-09 10:00:34,678 - werkzeug - INFO -  * Debugger PIN: 554-865-809
 2025-05-09 10:00:34,819 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-05-09 10:00:44,858 - werkzeug - INFO - 127.0.0.1 - - [09/May/2025 10:00:44] "GET / HTTP/1.1" 200 -
+2025-05-09 10:00:45,548 - werkzeug - INFO - 127.0.0.1 - - [09/May/2025 10:00:45] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-05-09 10:00:52,575 - werkzeug - INFO - 127.0.0.1 - - [09/May/2025 10:00:52] "POST /chat HTTP/1.1" 200 -
+2025-05-09 10:00:58,042 - werkzeug - INFO - 127.0.0.1 - - [09/May/2025 10:00:58] "POST /chat HTTP/1.1" 200 -
+2025-05-09 10:01:04,059 - werkzeug - INFO - 127.0.0.1 - - [09/May/2025 10:01:04] "POST /chat HTTP/1.1" 200 -
+2025-05-09 10:01:10,543 - werkzeug - INFO - 127.0.0.1 - - [09/May/2025 10:01:10] "POST /chat HTTP/1.1" 200 -
+2025-05-09 10:01:15,153 - werkzeug - INFO - 127.0.0.1 - - [09/May/2025 10:01:15] "POST /chat HTTP/1.1" 200 -
+2025-05-09 10:01:19,411 - werkzeug - INFO - 127.0.0.1 - - [09/May/2025 10:01:19] "POST /chat HTTP/1.1" 200 -
+2025-05-09 10:01:23,255 - werkzeug - INFO - 127.0.0.1 - - [09/May/2025 10:01:23] "POST /chat HTTP/1.1" 200 -
+2025-05-09 10:01:27,404 - werkzeug - INFO - 127.0.0.1 - - [09/May/2025 10:01:27] "POST /chat HTTP/1.1" 200 -
+2025-05-09 10:01:31,724 - werkzeug - INFO - 127.0.0.1 - - [09/May/2025 10:01:31] "POST /chat HTTP/1.1" 200 -
+2025-05-09 10:24:55,014 - werkzeug - INFO -  * Detected change in 'C:\\Users\\vrfr9\\chatbot_project\\app.py', reloading
+2025-05-09 10:24:55,581 - werkzeug - INFO -  * Restarting with stat
+2025-05-09 10:24:57,737 - chatbot - INFO - Initializing chatbot module
+2025-05-09 10:24:57,739 - chatbot - INFO - Successfully loaded memory from file
+2025-05-09 10:24:57,740 - chatbot - INFO - Successfully loaded bot name: Wicked
+2025-05-09 10:24:57,742 - root - WARNING - Speech recognition libraries not installed. Voice features will be disabled.
+2025-05-09 10:24:57,765 - werkzeug - WARNING -  * Debugger is active!
+2025-05-09 10:24:57,778 - werkzeug - INFO -  * Debugger PIN: 554-865-809
+2025-05-09 10:24:57,916 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-05-09 10:26:03,545 - werkzeug - INFO -  * Detected change in 'C:\\Users\\vrfr9\\chatbot_project\\voice_demo.py', reloading
+2025-05-09 10:26:03,737 - werkzeug - INFO -  * Restarting with stat

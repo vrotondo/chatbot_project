@@ -96,14 +96,38 @@
             color: white;
             border: none;
             border-radius: 20px;
-            padding: 10px 20px;
+            padding: 10px 15px;
             margin-left: 10px;
             cursor: pointer;
             transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .chat-input button:hover {
             background-color: #3A80D2;
+        }
+
+        #voice-button,
+        #speak-toggle {
+            padding: 10px;
+        }
+
+        #voice-button svg,
+        #speak-toggle svg {
+            width: 20px;
+            height: 20px;
+            stroke: white;
+        }
+
+        #voice-button.listening {
+            background-color: #e74c3c;
+            animation: pulse 1.5s infinite;
+        }
+
+        #speak-toggle.active {
+            background-color: #27ae60;
         }
 
         .thinking {
@@ -112,10 +136,39 @@
             font-style: italic;
             margin-left: 10px;
         }
+
+        .voice-feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            z-index: 1000;
+            display: none;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
     </style>
 </head>
 
 <body>
+    <div class="voice-feedback" id="voice-feedback">Listening...</div>
     <div class="chat-container">
         <div class="chat-header">Chat with {{ bot_name }}</div>
         <div class="chat-messages" id="chat-messages">
@@ -124,6 +177,20 @@
         <div class="chat-input">
             <input type="text" id="user-input" placeholder="Type your message..." autofocus>
             <button id="send-button">Send</button>
+            <button id="voice-button" title="Speak to chatbot"><svg width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg></button>
+            <button id="speak-toggle" title="Toggle text-to-speech for bot responses"><svg width="24" height="24"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                </svg></button>
         </div>
     </div>
 
@@ -136,6 +203,70 @@
         const messagesContainer = document.getElementById('chat-messages');
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
+        const voiceButton = document.getElementById('voice-button');
+        const speakToggle = document.getElementById('speak-toggle');
+        const voiceFeedback = document.getElementById('voice-feedback');
+
+        // Speech recognition setup
+        let recognition;
+        let isListening = false;
+
+        // Check browser support for speech recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US'; // Set language
+
+            recognition.onstart = function () {
+                isListening = true;
+                voiceButton.classList.add('listening');
+                voiceFeedback.style.display = 'block';
+                console.log('Voice recognition started');
+            };
+
+            recognition.onresult = function (event) {
+                const transcript = event.results[0][0].transcript;
+                console.log('Voice recognized:', transcript);
+                userInput.value = transcript;
+
+                // Hide feedback immediately
+                voiceFeedback.style.display = 'none';
+
+                // Small delay to let the user see what was transcribed
+                setTimeout(() => {
+                    sendMessage();
+                }, 500);
+            };
+
+            recognition.onerror = function (event) {
+                console.error('Speech recognition error:', event.error);
+                voiceFeedback.style.display = 'none';
+                isListening = false;
+                voiceButton.classList.remove('listening');
+
+                if (event.error === 'no-speech') {
+                    addBotMessage("{{ bot_name }}", "I didn't hear anything. Please try again.");
+                } else {
+                    addBotMessage("{{ bot_name }}", "I couldn't understand that. Please try speaking again or type your message.");
+                }
+            };
+
+            recognition.onend = function () {
+                isListening = false;
+                voiceButton.classList.remove('listening');
+                voiceFeedback.style.display = 'none';
+                console.log('Voice recognition ended');
+            };
+        }
+
+        // Text-to-speech setup
+        let isSpeechEnabled = localStorage.getItem('speechEnabled') === 'true';
+
+        // Update the speech toggle button state
+        if (isSpeechEnabled) {
+            speakToggle.classList.add('active');
+        }
 
         // Add event listeners
         sendButton.addEventListener('click', sendMessage);
@@ -145,10 +276,74 @@
             }
         });
 
+        // Add voice button event listener if supported
+        if (recognition) {
+            voiceButton.addEventListener('click', toggleVoiceInput);
+        } else {
+            voiceButton.style.display = 'none';
+            console.warn('Speech recognition not supported in this browser');
+        }
+
+        // Add speak toggle event listener
+        speakToggle.addEventListener('click', toggleSpeech);
+
         // Add welcome message
         window.addEventListener('load', function () {
-            addBotMessage("{{ bot_name }}", "Hi there! I'm {{ bot_name }}. How can I help you today?");
+            const welcomeMessage = "Hi there! I'm {{ bot_name }}. How can I help you today?";
+            addBotMessage("{{ bot_name }}", welcomeMessage);
+
+            // Speak welcome message if enabled
+            if (isSpeechEnabled) {
+                speakText(welcomeMessage);
+            }
         });
+
+        // Function to toggle voice input
+        function toggleVoiceInput() {
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+
+        // Function to toggle text-to-speech
+        function toggleSpeech() {
+            isSpeechEnabled = !isSpeechEnabled;
+            localStorage.setItem('speechEnabled', isSpeechEnabled);
+
+            if (isSpeechEnabled) {
+                speakToggle.classList.add('active');
+                addBotMessage("{{ bot_name }}", "Text-to-speech is now enabled.");
+                speakText("Text-to-speech is now enabled.");
+            } else {
+                speakToggle.classList.remove('active');
+                addBotMessage("{{ bot_name }}", "Text-to-speech is now disabled.");
+                // Don't speak this message since TTS is now off
+            }
+        }
+
+        // Function to speak text
+        function speakText(text) {
+            if (!isSpeechEnabled) return;
+
+            // Clean up text for speaking (remove markdown and html)
+            const cleanText = text
+                .replace(/\*([^*]+)\*/g, '$1')  // Remove bold markers
+                .replace(/_([^_]+)_/g, '$1')    // Remove italic markers
+                .replace(/<br>/g, ' ');         // Replace breaks with spaces
+
+            // Create utterance
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.lang = 'en-US';
+            utterance.volume = 1;
+            utterance.rate = 1;
+            utterance.pitch = 1;
+
+            // Speak
+            window.speechSynthesis.cancel(); // Cancel any ongoing speech
+            window.speechSynthesis.speak(utterance);
+        }
 
         // Function to send message
         function sendMessage() {
@@ -189,7 +384,13 @@
                     }
 
                     // Add bot message
-                    addBotMessage(data.bot_name || "{{ bot_name }}", data.response);
+                    const botName = data.bot_name || "{{ bot_name }}";
+                    addBotMessage(botName, data.response);
+
+                    // Speak the response if enabled
+                    if (isSpeechEnabled) {
+                        speakText(data.response);
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -201,7 +402,13 @@
                     }
 
                     // Add error message
-                    addBotMessage("{{ bot_name }}", "Sorry, I encountered an error processing your message. Please try again.");
+                    const errorMessage = "Sorry, I encountered an error processing your message. Please try again.";
+                    addBotMessage("{{ bot_name }}", errorMessage);
+
+                    // Speak the error if enabled
+                    if (isSpeechEnabled) {
+                        speakText(errorMessage);
+                    }
                 });
         }
 
