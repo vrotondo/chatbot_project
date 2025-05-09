@@ -57,3 +57,46 @@
 2025-05-09 10:24:57,916 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
 2025-05-09 10:26:03,545 - werkzeug - INFO -  * Detected change in 'C:\\Users\\vrfr9\\chatbot_project\\voice_demo.py', reloading
 2025-05-09 10:26:03,737 - werkzeug - INFO -  * Restarting with stat
+2025-05-09 10:26:05,504 - chatbot - INFO - Initializing chatbot module
+2025-05-09 10:26:05,505 - chatbot - INFO - Successfully loaded memory from file
+2025-05-09 10:26:05,506 - chatbot - INFO - Successfully loaded bot name: Wicked
+2025-05-09 10:26:05,507 - root - WARNING - Speech recognition libraries not installed. Voice features will be disabled.
+2025-05-09 10:26:05,528 - werkzeug - WARNING -  * Debugger is active!
+2025-05-09 10:26:05,539 - werkzeug - INFO -  * Debugger PIN: 554-865-809
+2025-05-09 10:26:05,682 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-05-09 10:28:12,555 - werkzeug - INFO - 127.0.0.1 - - [09/May/2025 10:28:12] "GET / HTTP/1.1" 200 -
+2025-05-09 10:28:39,846 - werkzeug - INFO - 127.0.0.1 - - [09/May/2025 10:28:39] "POST /chat HTTP/1.1" 200 -
+2025-05-09 10:28:46,785 - werkzeug - INFO - 127.0.0.1 - - [09/May/2025 10:28:46] "POST /chat HTTP/1.1" 200 -
+2025-05-09 10:28:58,189 - werkzeug - INFO - 127.0.0.1 - - [09/May/2025 10:28:58] "POST /chat HTTP/1.1" 200 -
+2025-05-09 10:38:36,025 - werkzeug - INFO -  * Detected change in 'C:\\Users\\vrfr9\\chatbot_project\\app.py', reloading
+2025-05-09 10:38:36,289 - werkzeug - INFO -  * Restarting with stat
+2025-05-09 10:38:38,407 - chatbot - INFO - Initializing chatbot module
+2025-05-09 10:38:38,408 - chatbot - INFO - Successfully loaded memory from file
+2025-05-09 10:38:38,409 - chatbot - INFO - Successfully loaded bot name: Wicked
+2025-05-09 10:38:39,117 - __main__ - INFO - Voice libraries successfully imported. Server-side voice features enabled.
+2025-05-09 10:38:39,406 - comtypes.client._code_cache - INFO - Could not import comtypes.gen, trying to create it.
+2025-05-09 10:38:39,408 - comtypes.client._code_cache - INFO - Created comtypes.gen directory: 'C:\Users\vrfr9\chatbot_project\venv\Lib\site-packages\comtypes\gen'
+2025-05-09 10:38:39,408 - comtypes.client._code_cache - INFO - Writing __init__.py file: 'C:\Users\vrfr9\chatbot_project\venv\Lib\site-packages\comtypes\gen\__init__.py'
+2025-05-09 10:38:39,423 - comtypes.client._code_cache - INFO - Using writeable comtypes cache directory: 'C:\Users\vrfr9\chatbot_project\venv\Lib\site-packages\comtypes\gen'
+2025-05-09 10:38:39,601 - comtypes.client._generate - INFO - Could not import comtypes.gen._C866CA3A_32F7_11D2_9602_00C04F8EE628_0_5_4: No module named 'comtypes.gen._C866CA3A_32F7_11D2_9602_00C04F8EE628_0_5_4'
+2025-05-09 10:38:39,616 - comtypes.client._generate - INFO - # Generating comtypes.gen._C866CA3A_32F7_11D2_9602_00C04F8EE628_0_5_4
+2025-05-09 10:38:39,741 - comtypes.client._generate - INFO - # Generating comtypes.gen.SpeechLib
+2025-05-09 10:38:39,751 - comtypes.client._generate - INFO - Could not import comtypes.gen._00020430_0000_0000_C000_000000000046_0_2_0: No module named 'comtypes.gen._00020430_0000_0000_C000_000000000046_0_2_0'
+2025-05-09 10:38:39,752 - comtypes.client._generate - INFO - # Generating comtypes.gen._00020430_0000_0000_C000_000000000046_0_2_0
+2025-05-09 10:38:39,762 - comtypes.client._generate - INFO - # Generating comtypes.gen.stdole
+2025-05-09 10:38:41,618 - __main__ - INFO - Voice engines initialized successfully
+2025-05-09 10:38:41,647 - werkzeug - WARNING -  * Debugger is active!
+2025-05-09 10:38:41,664 - werkzeug - INFO -  * Debugger PIN: 554-865-809
+2025-05-09 10:38:41,971 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2025-05-09 10:41:10,026 - werkzeug - INFO -  * Detected change in 'C:\\Users\\vrfr9\\chatbot_project\\voice_demo.py', reloading
+2025-05-09 10:41:15,233 - werkzeug - INFO -  * Restarting with stat
+2025-05-09 10:41:16,968 - chatbot - INFO - Initializing chatbot module
+2025-05-09 10:41:16,969 - chatbot - INFO - Successfully loaded memory from file
+2025-05-09 10:41:16,970 - chatbot - INFO - Successfully loaded bot name: Wicked
+2025-05-09 10:41:17,023 - __main__ - INFO - Voice libraries successfully imported. Server-side voice features enabled.
+2025-05-09 10:41:17,099 - comtypes.client._code_cache - INFO - Imported existing <module 'comtypes.gen' from 'C:\\Users\\vrfr9\\chatbot_project\\venv\\Lib\\site-packages\\comtypes\\gen\\__init__.py'>
+2025-05-09 10:41:17,100 - comtypes.client._code_cache - INFO - Using writeable comtypes cache directory: 'C:\Users\vrfr9\chatbot_project\venv\Lib\site-packages\comtypes\gen'
+2025-05-09 10:41:17,413 - __main__ - INFO - Voice engines initialized successfully
+2025-05-09 10:41:17,427 - werkzeug - WARNING -  * Debugger is active!
+2025-05-09 10:41:17,435 - werkzeug - INFO -  * Debugger PIN: 554-865-809
+2025-05-09 10:41:17,586 - werkzeug - INFO -  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)

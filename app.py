@@ -5,14 +5,22 @@ import os
 import tempfile
 import logging
 
-# Set up optional imports for voice recognition
+# Set up logging
+logging.basicConfig(level=logging.INFO,
+                   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# Conditionally import voice libraries
 try:
     import speech_recognition as sr
     import pyttsx3
     VOICE_ENABLED = True
+    logger.info("Voice libraries successfully imported. Server-side voice features enabled.")
 except ImportError:
     VOICE_ENABLED = False
-    logging.warning("Speech recognition libraries not installed. Voice features will be disabled.")
+    logger.warning("Voice libraries (speech_recognition, pyttsx3) not available. "
+                  "Server-side voice features will be disabled, but browser-based "
+                  "voice interaction will still work.")
 
 app = Flask(__name__)
 
@@ -22,11 +30,17 @@ chatbot.set_user_id("web_user")  # Set a user ID for the web interface
 
 # Initialize speech recognition if available
 if VOICE_ENABLED:
-    recognizer = sr.Recognizer()
-    
-    # Initialize text-to-speech engine
-    tts_engine = pyttsx3.init()
-    tts_engine.setProperty('rate', 175)  # Adjust speech rate
+    try:
+        recognizer = sr.Recognizer()
+        
+        # Initialize text-to-speech engine
+        tts_engine = pyttsx3.init()
+        tts_engine.setProperty('rate', 175)  # Adjust speech rate
+        logger.info("Voice engines initialized successfully")
+    except Exception as e:
+        VOICE_ENABLED = False
+        logger.error(f"Failed to initialize voice engines: {e}")
+        logger.warning("Voice features will be disabled")
 
 @app.route('/')
 def home():
