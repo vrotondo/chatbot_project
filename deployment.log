@@ -1,0 +1,15 @@
+2025-05-10 16:33:52,291 - deployment - INFO - Creating default deployment configuration
+2025-05-10 16:33:52,294 - deployment - INFO - Saved deployment configuration
+2025-05-10 16:33:52,294 - deployment - INFO - Preparing deployment for target: local
+2025-05-10 16:33:52,296 - deployment - INFO - Created directory: C:\Users\vrfr9\chatbot_project\build
+2025-05-10 16:33:52,298 - deployment - INFO - Created directory: C:\Users\vrfr9\chatbot_project\dist
+2025-05-10 16:33:52,300 - deployment - INFO - Created requirements file: C:\Users\vrfr9\chatbot_project\build\requirements.txt
+2025-05-10 16:33:52,306 - deployment - INFO - Copied file: config.json
+2025-05-10 16:33:52,310 - deployment - INFO - Copied file: memory.json
+2025-05-10 16:33:52,314 - deployment - INFO - Copied file: app.py
+2025-05-10 16:33:52,380 - deployment - INFO - Copied directory: chatbot
+2025-05-10 16:33:52,384 - deployment - INFO - Copied directory: templates
+2025-05-10 16:33:52,392 - deployment - INFO - Copied directory: data
+2025-05-10 16:33:52,394 - deployment - INFO - Created .gitignore file
+2025-05-10 16:33:52,394 - deployment - INFO - Finished copying project files
+2025-05-10 16:33:52,394 - deployment - INFO - Starting local deployment test

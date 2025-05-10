@@ -1,0 +1,318 @@
+[
+    {
+        "text": "hello",
+        "intent": "greeting"
+    },
+    {
+        "text": "hi there",
+        "intent": "greeting"
+    },
+    {
+        "text": "hey",
+        "intent": "greeting"
+    },
+    {
+        "text": "good morning",
+        "intent": "greeting"
+    },
+    {
+        "text": "good afternoon",
+        "intent": "greeting"
+    },
+    {
+        "text": "good evening",
+        "intent": "greeting"
+    },
+    {
+        "text": "what's up",
+        "intent": "greeting"
+    },
+    {
+        "text": "hello there",
+        "intent": "greeting"
+    },
+    {
+        "text": "hi, how are you",
+        "intent": "greeting"
+    },
+    {
+        "text": "hey, how's it going",
+        "intent": "greeting"
+    },
+    {
+        "text": "howdy",
+        "intent": "greeting"
+    },
+    {
+        "text": "nice to meet you",
+        "intent": "greeting"
+    },
+    {
+        "text": "goodbye",
+        "intent": "farewell"
+    },
+    {
+        "text": "bye",
+        "intent": "farewell"
+    },
+    {
+        "text": "see you later",
+        "intent": "farewell"
+    },
+    {
+        "text": "see you soon",
+        "intent": "farewell"
+    },
+    {
+        "text": "have a good day",
+        "intent": "farewell"
+    },
+    {
+        "text": "talk to you later",
+        "intent": "farewell"
+    },
+    {
+        "text": "i have to go",
+        "intent": "farewell"
+    },
+    {
+        "text": "i'm leaving",
+        "intent": "farewell"
+    },
+    {
+        "text": "catch you later",
+        "intent": "farewell"
+    },
+    {
+        "text": "until next time",
+        "intent": "farewell"
+    },
+    {
+        "text": "good night",
+        "intent": "farewell"
+    },
+    {
+        "text": "what's the weather like",
+        "intent": "weather"
+    },
+    {
+        "text": "how's the weather today",
+        "intent": "weather"
+    },
+    {
+        "text": "weather forecast",
+        "intent": "weather"
+    },
+    {
+        "text": "is it going to rain today",
+        "intent": "weather"
+    },
+    {
+        "text": "what's the temperature outside",
+        "intent": "weather"
+    },
+    {
+        "text": "how hot is it",
+        "intent": "weather"
+    },
+    {
+        "text": "how cold is it",
+        "intent": "weather"
+    },
+    {
+        "text": "will it be sunny tomorrow",
+        "intent": "weather"
+    },
+    {
+        "text": "check the weather for me",
+        "intent": "weather"
+    },
+    {
+        "text": "what's the weather like in new york",
+        "intent": "weather"
+    },
+    {
+        "text": "tell me about the weather in chicago",
+        "intent": "weather"
+    },
+    {
+        "text": "is it snowing",
+        "intent": "weather"
+    },
+    {
+        "text": "what's your name",
+        "intent": "name"
+    },
+    {
+        "text": "who are you",
+        "intent": "name"
+    },
+    {
+        "text": "what should i call you",
+        "intent": "name"
+    },
+    {
+        "text": "tell me your name",
+        "intent": "name"
+    },
+    {
+        "text": "do you have a name",
+        "intent": "name"
+    },
+    {
+        "text": "what are you called",
+        "intent": "name"
+    },
+    {
+        "text": "my name is john",
+        "intent": "set_name"
+    },
+    {
+        "text": "i'm sarah",
+        "intent": "set_name"
+    },
+    {
+        "text": "you can call me mike",
+        "intent": "set_name"
+    },
+    {
+        "text": "i am david",
+        "intent": "set_name"
+    },
+    {
+        "text": "call me alex",
+        "intent": "set_name"
+    },
+    {
+        "text": "name's james",
+        "intent": "set_name"
+    },
+    {
+        "text": "help",
+        "intent": "help"
+    },
+    {
+        "text": "what can you do",
+        "intent": "help"
+    },
+    {
+        "text": "show me what you can do",
+        "intent": "help"
+    },
+    {
+        "text": "how do you work",
+        "intent": "help"
+    },
+    {
+        "text": "i need help",
+        "intent": "help"
+    },
+    {
+        "text": "what are your capabilities",
+        "intent": "help"
+    },
+    {
+        "text": "tell me about your features",
+        "intent": "help"
+    },
+    {
+        "text": "what commands do you understand",
+        "intent": "help"
+    },
+    {
+        "text": "thank you",
+        "intent": "thanks"
+    },
+    {
+        "text": "thanks",
+        "intent": "thanks"
+    },
+    {
+        "text": "appreciate it",
+        "intent": "thanks"
+    },
+    {
+        "text": "thanks a lot",
+        "intent": "thanks"
+    },
+    {
+        "text": "thank you very much",
+        "intent": "thanks"
+    },
+    {
+        "text": "thanks for your help",
+        "intent": "thanks"
+    },
+    {
+        "text": "great, thanks",
+        "intent": "thanks"
+    },
+    {
+        "text": "what's my favorite color",
+        "intent": "get_favorite"
+    },
+    {
+        "text": "tell me my favorite food",
+        "intent": "get_favorite"
+    },
+    {
+        "text": "what food do i like",
+        "intent": "get_favorite"
+    },
+    {
+        "text": "what's my favorite movie",
+        "intent": "get_favorite"
+    },
+    {
+        "text": "my favorite animal",
+        "intent": "get_favorite"
+    },
+    {
+        "text": "my favorite color is blue",
+        "intent": "set_favorite"
+    },
+    {
+        "text": "i like the color red",
+        "intent": "set_favorite"
+    },
+    {
+        "text": "my favorite food is pizza",
+        "intent": "set_favorite"
+    },
+    {
+        "text": "i love sushi",
+        "intent": "set_favorite"
+    },
+    {
+        "text": "my favorite movie is inception",
+        "intent": "set_favorite"
+    },
+    {
+        "text": "i like star wars",
+        "intent": "set_favorite"
+    },
+    {
+        "text": "my favorite animal is dog",
+        "intent": "set_favorite"
+    },
+    {
+        "text": "change your name",
+        "intent": "rename_bot"
+    },
+    {
+        "text": "i want to call you alfred",
+        "intent": "rename_bot"
+    },
+    {
+        "text": "your name should be siri",
+        "intent": "rename_bot"
+    },
+    {
+        "text": "can i rename you",
+        "intent": "rename_bot"
+    },
+    {
+        "text": "call you jarvis",
+        "intent": "rename_bot"
+    }
+]

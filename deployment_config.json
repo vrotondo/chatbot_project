@@ -1,0 +1,12 @@
+{
+  "app_name": "wicked_chatbot",
+  "version": "1.0.0",
+  "python_version": "3.9",
+  "include_web": true,
+  "include_ml": true,
+  "include_transformers": true,
+  "include_voice": false,
+  "deployment_target": "local",
+  "web_port": 5000,
+  "requirements_file": "requirements.txt"
+}

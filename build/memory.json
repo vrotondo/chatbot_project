@@ -1,0 +1,8 @@
+{
+  "default_user": {
+    "favorite_color": "black",
+    "name": "John",
+    "favorite_movie": "LOTR",
+    "favorite_animal": "dinosaur"
+  }
+}
